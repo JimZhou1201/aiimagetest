@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getConfig } from 'next/config';
 
 interface RequestBody {
   prompt: string;
@@ -15,8 +14,7 @@ interface ApiResponse {
 
 export async function POST(request: Request) {
   try {
-    const { serverRuntimeConfig } = getConfig();
-    const apiKey = serverRuntimeConfig.SILICONFLOW_API_KEY || process.env.SILICONFLOW_API_KEY;
+    const apiKey = process.env.SILICONFLOW_API_KEY;
 
     if (!apiKey) {
       console.error('API Key not found in configuration');
