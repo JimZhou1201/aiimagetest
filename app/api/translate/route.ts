@@ -28,14 +28,14 @@ function getAuthUrl() {
   return `${API_URL}?authorization=${authorization}&date=${encodeURI(date)}&host=${host}`;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   try {
     const { text } = await request.json() as RequestBody;
     
     // 创建WebSocket连接
     const ws = new WebSocket(getAuthUrl());
     
-    return new Promise((resolve, reject) => {
+    return new Promise<Response>((resolve, reject) => {
       ws.onopen = () => {
         // 发送翻译请求
         ws.send(JSON.stringify({
