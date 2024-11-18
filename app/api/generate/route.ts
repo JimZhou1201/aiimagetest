@@ -3,12 +3,19 @@ import { NextResponse } from 'next/server';
 interface RequestBody {
   prompt: string;
   image_size?: string;
+  num_inference_steps?: number;
+  guidance_scale?: number;
+  seed?: number;
 }
 
 interface ApiResponse {
   images: Array<{
     url: string;
   }>;
+  timings?: {
+    inference: number;
+  };
+  seed?: number;
   message?: string;
 }
 
@@ -23,7 +30,19 @@ export async function POST(request: Request) {
 
     const body = await request.json() as RequestBody;
     
-    console.log('Sending request to API with prompt:', body.prompt);
+    console.log('Received request body:', body);
+
+    // 构建API请求体
+    const apiRequestBody = {
+      model: "black-forest-labs/FLUX.1-schnell",
+      prompt: body.prompt,
+      image_size: body.image_size || "1024x1024",
+      ...(body.num_inference_steps && { num_inference_steps: body.num_inference_steps }),
+      ...(body.guidance_scale && { guidance_scale: body.guidance_scale }),
+      ...(body.seed && { seed: body.seed })
+    };
+
+    console.log('Sending request to API:', apiRequestBody);
     
     const response = await fetch('https://api.siliconflow.cn/v1/images/generations', {
       method: 'POST',
@@ -31,11 +50,7 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: "black-forest-labs/FLUX.1-schnell",
-        prompt: body.prompt,
-        image_size: body.image_size || "1024x1024",
-      }),
+      body: JSON.stringify(apiRequestBody)
     });
 
     const data = await response.json() as ApiResponse;
