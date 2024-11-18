@@ -1,5 +1,8 @@
 FROM node:18-alpine AS base
 
+# 添加 sharp 所需的系统依赖
+RUN apk add --no-cache vips-dev
+
 # 安装依赖
 FROM base AS deps
 WORKDIR /app
