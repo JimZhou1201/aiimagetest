@@ -31,14 +31,20 @@ export default function Home() {
         }),
       });
 
-      const data = await response.json() as GenerateResponse;
+      const data = await response.json();
       
       if (!response.ok) {
+        console.error('Error response:', data);
         throw new Error(data.message || 'Failed to generate image');
+      }
+
+      if (!data.images?.[0]?.url) {
+        throw new Error('No image URL in response');
       }
 
       setImageUrl(data.images[0].url);
     } catch (err: unknown) {
+      console.error('Client Error:', err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
