@@ -10,8 +10,8 @@ WORKDIR /app
 # 复制package文件
 COPY package.json package-lock.json ./
 
-# 安装依赖
-RUN npm ci
+# 安装依赖 (改用 npm install 替代 npm ci)
+RUN npm install
 
 # 构建应用
 FROM base AS builder
