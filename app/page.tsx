@@ -55,13 +55,37 @@ const Home = () => {
       setLoading(true);
       setError("");
       
+      // 检查是否包含非英文字符
+      const hasNonEnglish = /[^\x00-\x7F]/.test(prompt);
+      
+      let finalPrompt = prompt;
+      
+      // 如果包含非英文字符，先进行翻译
+      if (hasNonEnglish) {
+        const translateResponse = await fetch('/api/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: prompt }),
+        });
+        
+        if (!translateResponse.ok) {
+          throw new Error('Translation failed');
+        }
+        
+        const { translatedText } = await translateResponse.json();
+        finalPrompt = translatedText;
+      }
+      
+      // 使用翻译后的文本生成图片
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt,
+          prompt: finalPrompt,
           image_size: imageSize,
           num_inference_steps: steps,
           guidance_scale: guidance,
@@ -77,7 +101,6 @@ const Home = () => {
 
       setImageUrl(data.images[0].url);
       
-      // 如果API返回了实际使用的seed，更新UI
       if (data.seed) {
         setSeed(data.seed);
       }
@@ -231,16 +254,16 @@ const Home = () => {
                   </div>
                 </div>
                 {/* 参数控制 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2">
                   {/* 生成步数 */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2" style={{
+                    <label className="block text-sm font-medium mb-2 truncate text-center" style={{
                       background: 'linear-gradient(135deg, #818cf8 0%, #f472b6 50%, #a78bfa 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
                       WebkitTextFillColor: 'transparent'
                     }}>
-                      生成步数 (1-50)
+                      生成步数
                     </label>
                     <input
                       type="number"
@@ -248,18 +271,19 @@ const Home = () => {
                       onChange={(e) => setSteps(Number(e.target.value))}
                       min={1}
                       max={50}
-                      className="w-full px-4 py-2 rounded-lg border"
+                      className="w-full px-2 py-2 rounded-lg border text-sm mb-1 text-center pl-6"
                     />
+                    <p className="text-xs text-gray-400 text-center">1-50</p>
                   </div>
                   {/* 提示词偏向 */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2" style={{
+                    <label className="block text-sm font-medium mb-2 truncate text-center" style={{
                       background: 'linear-gradient(135deg, #818cf8 0%, #f472b6 50%, #a78bfa 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
                       WebkitTextFillColor: 'transparent'
                     }}>
-                      提示词偏向 (1-20)
+                      提示词偏向
                     </label>
                     <input
                       type="number"
@@ -268,26 +292,28 @@ const Home = () => {
                       step={0.1}
                       min={1}
                       max={20}
-                      className="w-full px-4 py-2 rounded-lg border"
+                      className="w-full px-2 py-2 rounded-lg border text-sm mb-1 text-center pl-6"
                     />
+                    <p className="text-xs text-gray-400 text-center">1-20</p>
                   </div>
                   {/* Seed */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2" style={{
+                    <label className="block text-sm font-medium mb-2 truncate text-center" style={{
                       background: 'linear-gradient(135deg, #818cf8 0%, #f472b6 50%, #a78bfa 100%)',
                       WebkitBackgroundClip: 'text',
                       backgroundClip: 'text',
                       WebkitTextFillColor: 'transparent'
                     }}>
-                      Seed (可选)
+                      Seed
                     </label>
                     <input
                       type="number"
                       value={seed || ''}
                       onChange={(e) => setSeed(e.target.value ? Number(e.target.value) : undefined)}
-                      className="w-full px-4 py-2 rounded-lg border"
-                      placeholder="随机种子"
+                      className="w-full px-2 py-2 rounded-lg border text-sm mb-1 text-center pl-6"
+                      placeholder="随机"
                     />
+                    <p className="text-xs text-gray-400 text-center">可选</p>
                   </div>
                 </div>
                 {/* 生成按钮 */}
