@@ -1,7 +1,6 @@
 'use client';
 import { useState } from "react";
 import Image from "next/image";
-import SparklesText from "@/components/ui/sparkles-text";
 import AnimatedGradientText from "@/components/ui/animated-gradient-text";
 
 // 图片尺寸选项
