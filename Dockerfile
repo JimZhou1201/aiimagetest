@@ -16,6 +16,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# 创建public目录（如果不存在）
+RUN mkdir -p public
+
 # 设置环境变量
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV=production
@@ -35,10 +38,14 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# 创建必要的目录
+RUN mkdir -p public .next/static
+RUN chown -R nextjs:nodejs public .next
+
 # 复制必要文件
-COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 
