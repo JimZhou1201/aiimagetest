@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getConfig } from 'next/config';
 
 interface RequestBody {
   prompt: string;
@@ -14,7 +15,11 @@ interface ApiResponse {
 
 export async function POST(request: Request) {
   try {
-    if (!process.env.SILICONFLOW_API_KEY) {
+    const { serverRuntimeConfig } = getConfig();
+    const apiKey = serverRuntimeConfig.SILICONFLOW_API_KEY || process.env.SILICONFLOW_API_KEY;
+
+    if (!apiKey) {
+      console.error('API Key not found in configuration');
       throw new Error('SILICONFLOW_API_KEY is not configured');
     }
 
@@ -25,7 +30,7 @@ export async function POST(request: Request) {
     const response = await fetch('https://api.siliconflow.cn/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SILICONFLOW_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
