@@ -1,7 +1,13 @@
 FROM node:18-alpine AS base
 
-# 添加 sharp 所需的系统依赖
-RUN apk add --no-cache vips-dev
+# 添加必要的系统依赖
+RUN apk add --no-cache \
+    vips-dev \
+    python3 \
+    make \
+    g++ \
+    gcc \
+    libc6-compat
 
 # 安装依赖
 FROM base AS deps
@@ -10,8 +16,8 @@ WORKDIR /app
 # 复制package文件
 COPY package.json package-lock.json ./
 
-# 安装依赖 (改用 npm install 替代 npm ci)
-RUN npm install
+# 安装依赖
+RUN npm install --platform=linuxmusl
 
 # 构建应用
 FROM base AS builder
